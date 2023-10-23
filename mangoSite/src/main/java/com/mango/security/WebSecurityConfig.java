@@ -14,11 +14,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.mango.security.jwt.AuthEntryPointJwt;
+import com.mango.security.jwt.AuthTokenFilter;
+import com.mango.security.services.UserDetailsServiceImpl;
+
 @Configuration
 @EnableMethodSecurity
 // (securedEnabled = true,
 // jsr250Enabled = true,
-// prePostEnabled = true) // by default
+// prePostEnabled = true) 
+// by default
 public class WebSecurityConfig {
 
 	@Autowired
