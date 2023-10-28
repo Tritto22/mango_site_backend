@@ -62,14 +62,14 @@ public class TestController {
 //        if (!userId.equals(user.getId())) {
 //            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Non sei autorizzato a eseguire questa azione.");
 //        }
-		if(user.getPassword()!= null) {
+		if(user.getPassword()!= null && !user.getPassword().isEmpty()) {
 			user.setPassword(encoder.encode(user.getPassword()));
 		}
         // Aggiornamento del profilo utente
         User updatedUser = service.updateUser(userId, user);
         
         if (updatedUser != null) {
-            return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
+            return ResponseEntity.ok(new MessageResponse("Modifica avvenuta con successo ora effettua nuovamente il Login!"));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore durante l'aggiornamento del profilo utente.");
         }
