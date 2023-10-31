@@ -1,4 +1,4 @@
-package com.mango.models;
+package com.mango.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.mango.models;
+package com.mango.entity;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mango.models.User;
+import com.mango.entity.User;
 import com.mango.repository.UserRepository;
 
 @Service

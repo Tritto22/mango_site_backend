@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mango.models.ERole;
-import com.mango.models.Role;
-import com.mango.models.User;
+import com.mango.entity.ERole;
+import com.mango.entity.Role;
+import com.mango.entity.User;
 import com.mango.payload.request.LoginRequest;
 import com.mango.payload.request.SignupRequest;
 import com.mango.payload.response.JwtResponse;

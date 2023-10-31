@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
@@ -73,13 +72,16 @@ public class WebSecurityConfig {
         config.addAllowedMethod("POST");
         config.addAllowedMethod("PUT");
         config.addAllowedMethod("DELETE");
+        config.addExposedHeader("Access-Control-Allow-Origin"); // Aggiungi l'header Access-Control-Allow-Origin
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
 	  
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-	    http.csrf(csrf -> csrf.disable())
+	    http
+	    	.addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+	    	.csrf(csrf -> csrf.disable())
 //	        .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(auth -> 

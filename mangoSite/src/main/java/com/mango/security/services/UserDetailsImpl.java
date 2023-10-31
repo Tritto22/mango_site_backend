@@ -10,7 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.mango.models.User;
+import com.mango.entity.User;
 
 public class UserDetailsImpl implements UserDetails {
 

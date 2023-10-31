@@ -1,4 +1,4 @@
-package com.mango.models;
+package com.mango.entity;
 
 public enum ERole {
 	ROLE_USER,
