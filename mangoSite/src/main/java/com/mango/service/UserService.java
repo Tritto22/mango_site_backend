@@ -32,7 +32,7 @@ public class UserService {
 		
 		try {
 		
-			userValidation(user, currentUser);
+			userValidation(user);
 			userLogged = userLoggedIn.takeUserLogged();
 			currentUser = repository.findByUsername(userLogged.getUsername()).orElse(null);
 			currentUser.setEmail(user.getEmail());
@@ -57,7 +57,7 @@ public class UserService {
 		return response;
 	}
 	
-	private void userValidation(UserDto user, User currentUser) throws ValidationException {
+	private void userValidation(UserDto user) throws ValidationException {
 		if(user != null) {
 			if(StringUtils.hasText(user.getEmail())) {
 				String emailRegex = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
@@ -75,17 +75,7 @@ public class UserService {
 				}
 			} else {
 				throw new ValidationException("02", "Il campo username non può essere vuoto!");
-			}
-					
-//			if(user.getId() != null) {
-//				currentUser = repository.findById(user.getId()).orElse(null);
-//				
-//				if(currentUser == null) {
-//					throw new ValidationException("03", "L'utente che vuoi modificare non esiste!");
-//				}
-//			} else {
-//				throw new ValidationException("03", "L'id utente non può essere null!");
-//			}
+			}					
 		}
 	}
 }

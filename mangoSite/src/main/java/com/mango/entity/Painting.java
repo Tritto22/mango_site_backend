@@ -31,14 +31,13 @@ public class Painting {
 
 	@NotBlank(message = "Il campo non può essere vuoto o contenere solo spazi.")
 	private String title;
-	
-	
+		
 	private String img;
 	
 	private String size;
 	
 	@Range(min=1993, max=2199)
-	private int year;
+	private Integer year;
 	
 	private String description;
 	
