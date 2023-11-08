@@ -44,7 +44,7 @@ public class Painting {
 	//@UniqueElements
 	private String slug;
 	
-	@OneToMany(mappedBy="painting")
-	private List<Detail> details;
+//	@OneToMany(mappedBy="painting")
+//	private List<Detail> details;
 	
 }

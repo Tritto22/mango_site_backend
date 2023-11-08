@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.mango.dto.ErrorDto;
@@ -59,21 +60,22 @@ public class PaintingService {
 	public ResponseDto savePainting(PaintingDto painting) {
 		
 		Painting newPainting = new Painting();
+		PaintingDto createdPainting = new PaintingDto();
 		ResponseDto response = new ResponseDto();
 		
 		try {
 			
 			paintingValidation(painting);
-			newPainting = PaintingDto.dtoToEntity(painting);
+			PaintingDto.dtoToEntity(painting, newPainting);
 			
 			newPainting.setTitle(painting.getTitle());	
 			newPainting.setSlug(createUniqueSlug(painting.getTitle()));
 			
 			repository.save(newPainting);
 			
-			PaintingDto createdPainting = new PaintingDto();
 			
-			createdPainting = PaintingDto.entityToDto(newPainting);
+			
+			PaintingDto.entityToDto(newPainting, createdPainting);
 
 			
 			response.setPayload(createdPainting);
@@ -97,17 +99,9 @@ public class PaintingService {
 		try {
 			Pageable pageable = PageRequest.of(pageNumber, pageSize);
 			Page<Painting> firstTen = repository.findAll(pageable);
-//			List<Painting> modelPaintingList = repository.findAll();
-//			List<Painting> modelPaintingList = new ArrayList<>();
-
-//			for(int i=1; i<=Math.ceil((long)rowLength/10); i++){
-//				for(int j=0; j < i*10; j++ ) {
-//					Long id = Long.valueOf(j);
-//					Painting currentPainting = repository.findById(id);
-//					modelPaintingList.add(currentPainting);
-//				}
-//			}
-			List<PaintingDto> dtoPaintingList = convertToPaintingDtoList(firstTen);
+			Integer totPages = (int) Math.ceil((double) repository.count() / pageSize);
+//			Integer totPages = 1;
+			List<PaintingDto> dtoPaintingList = convertToPaintingDtoList(firstTen, totPages);
 			
 			response.setPayload(dtoPaintingList);
 		} catch(Exception e) {
@@ -123,28 +117,30 @@ public class PaintingService {
 	public ResponseDto updatePainting(PaintingDto painting) {
 		
 		Painting selectedPainting = new Painting();
+		PaintingDto updatedDtoPainting = new PaintingDto();
 		ResponseDto response = new ResponseDto();
 		
 		try {
 			
 			paintingValidation(painting);
-			selectedPainting = repository.findBySlug(painting.getSlug());
-			
-			if(!selectedPainting.getTitle().equalsIgnoreCase(painting.getTitle())) {
-				selectedPainting.setTitle(painting.getTitle());
-				selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));
-			}
-			
-			selectedPainting = PaintingDto.dtoToEntity(painting);
-//			selectedPainting.setDetails(painting.getDetails());
-			
-			repository.save(selectedPainting);
-			
-			PaintingDto updatededPainting = new PaintingDto();
-			
-			updatededPainting = PaintingDto.entityToDto(selectedPainting);
-			
-			response.setPayload(updatededPainting);
+			if(repository.existsBySlug(painting.getSlug())) {
+				selectedPainting = repository.findBySlug(painting.getSlug());
+				if(!selectedPainting.getTitle().equalsIgnoreCase(painting.getTitle())) {
+					selectedPainting.setTitle(painting.getTitle());
+					selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));
+				}
+				PaintingDto.dtoToEntity(painting, selectedPainting);
+	//			selectedPainting.setDetails(painting.getDetails());
+				
+				repository.save(selectedPainting);
+
+				PaintingDto.entityToDto(selectedPainting, updatedDtoPainting);
+				response.setPayload(updatedDtoPainting);
+			} else {
+	            ErrorDto error = new ErrorDto();
+	            error.setMsg("Il quadro con lo slug specificato non esiste.");
+	            response.setError(error);
+	        }
 		} catch(Exception e) {
 			ErrorDto error = new ErrorDto();
 			error.setMsg(e.getMessage());
@@ -159,16 +155,25 @@ public class PaintingService {
 	public ResponseDto deletePainting(PaintingDto painting) {
 		
 		Painting selectedPainting = new Painting();
+		PaintingDto delatedDtoPainting = new PaintingDto();
 		ResponseDto response = new ResponseDto();
 		try {
-			
-			paintingValidation(painting);
-			selectedPainting = repository.findBySlug(painting.getSlug());
-			repository.deleteById(selectedPainting.getId());
-			response.setPayload(painting);
+			if(repository.existsBySlug(painting.getSlug())) {
+				selectedPainting = repository.findBySlug(painting.getSlug());
+	
+				repository.deleteById(selectedPainting.getId());
+				
+				PaintingDto.entityToDto(selectedPainting, delatedDtoPainting);
+				response.setPayload(delatedDtoPainting);
+			} else {
+	            ErrorDto error = new ErrorDto();
+	            error.setMsg("Il quadro con lo slug specificato non esiste.");
+	            response.setError(error);
+	        }
 		} catch(Exception e) {
 			ErrorDto error = new ErrorDto();
-			error.setMsg("Errore nell' eliminazione del quadro!");
+			error.setMsg(e.getMessage());
+			response.setError(error);
 		}
 
 		return response;
@@ -190,15 +195,17 @@ public class PaintingService {
 		}
 	}
 	
-	private List<PaintingDto> convertToPaintingDtoList(Page<Painting> paintingList) {
+	private List<PaintingDto> convertToPaintingDtoList(Page<Painting> paintingList, Integer totPages) {
         return paintingList.stream()
-                .map(this::paintingToDto)
+                .map(painting -> paintingToDto(painting, totPages))
                 .collect(Collectors.toList());
     }
 
-	private PaintingDto paintingToDto(Painting painting) {
+	private PaintingDto paintingToDto(Painting painting, Integer totPages) {
         PaintingDto paintingDto = new PaintingDto();
         BeanUtils.copyProperties(painting, paintingDto);
+        
+        paintingDto.setTotPages(totPages);
         return paintingDto;
     }
 }

@@ -17,7 +17,7 @@ import com.mango.dto.ResponseDto;
 import com.mango.service.PaintingService;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/admin")
 public class PaintingController {
 	
 	@Autowired
@@ -41,7 +41,7 @@ public class PaintingController {
 		return ResponseEntity.ok(response);
 	}
 	
-	@PostMapping("/admin/addPainting")
+	@PostMapping("/addPainting")
 	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<?> addPainting(@RequestBody PaintingDto painting) {
 		
@@ -50,7 +50,7 @@ public class PaintingController {
 		return ResponseEntity.ok(response);
 	}
 	
-	@PutMapping("/admin/update")
+	@PutMapping("/update")
 	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<?> updatePainting(@RequestBody PaintingDto painting) {
 		
