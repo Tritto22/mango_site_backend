@@ -36,6 +36,16 @@ public class JwtUtils {
 	        .signWith(key(), SignatureAlgorithm.HS256)
 	        .compact();
 	}
+	
+	public void invalidateJwtToken(String username) {
+		
+	   	Jwts.builder()
+	        .setSubject(username)
+	        .setIssuedAt(new Date())
+	        .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+	        .signWith(key(), SignatureAlgorithm.HS256)
+	        .compact();
+	}
 	  
 	private Key key() {
 		return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));

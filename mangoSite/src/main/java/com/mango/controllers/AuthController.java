@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +37,8 @@ import com.mango.repository.RoleRepository;
 import com.mango.repository.UserRepository;
 import com.mango.security.jwt.JwtUtils;
 import com.mango.security.services.UserDetailsImpl;
+
+import io.jsonwebtoken.Jwts;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -133,5 +139,37 @@ public class AuthController {
 	    userRepository.save(user);
 
 	    return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+	}
+	
+	@GetMapping("/logout")
+	public void logoutUser(HttpServletRequest request) {
+		
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//		UserDetailsImpl userLoggedDetails = null;
+//		String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+//		
+//		if(authentication != null && authentication.isAuthenticated()) {
+//			Object principal = authentication.getPrincipal();
+//            if (principal instanceof UserDetailsImpl) {
+//            	userLoggedDetails = (UserDetailsImpl) principal;
+//            	if(userLoggedDetails != null) {
+//            		String username = userLoggedDetails.getUsername();
+//            		
+//            		HttpSession session = request.getSession(false);
+//            		SecurityContextHolder.clearContext();
+//            		if(session != null) {
+//            			session.invalidate();
+//            		}
+//            		
+//            		jwtUtils.invalidateJwtToken(username); 
+//            	}
+//            }
+//		}	
+		
+		HttpSession session = request.getSession(false);
+		SecurityContextHolder.clearContext();
+		if(session != null) {
+			session.invalidate();
+		}
 	}
 }
