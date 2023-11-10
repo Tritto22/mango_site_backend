@@ -26,6 +26,7 @@ public class PaintingDto implements Serializable{
 	private String description;
 	private String slug;
 	private Integer totPages;
+	private Boolean favorite;
 //	private List<DetailDto> details;
 	
 	public static Painting dtoToEntity(PaintingDto dto, Painting entity) {
@@ -34,6 +35,7 @@ public class PaintingDto implements Serializable{
 		entity.setSize(dto.getSize());
 		entity.setYear(dto.getYear());
 		entity.setDescription(dto.getDescription());
+		entity.setFavorite(dto.getFavorite());
 		
 		return entity;
 	}

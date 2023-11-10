@@ -41,8 +41,10 @@ public class Painting {
 	
 	private String description;
 	
-	//@UniqueElements
 	private String slug;
+	
+	@Column(columnDefinition = "boolean default false")
+	private Boolean favorite;
 	
 //	@OneToMany(mappedBy="painting")
 //	private List<Detail> details;
