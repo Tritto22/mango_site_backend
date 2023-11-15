@@ -1,7 +1,5 @@
 package com.mango.service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -10,14 +8,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.mango.dto.DetailDto;
 import com.mango.dto.ErrorDto;
 import com.mango.dto.PaintingDto;
 import com.mango.dto.ResponseDto;
+import com.mango.entity.Detail;
 import com.mango.entity.Painting;
 import com.mango.exception.ValidationException;
+import com.mango.repository.DetailRepository;
 import com.mango.repository.PaintingRepository;
 
 
@@ -26,6 +26,9 @@ public class PaintingService {
 
 	@Autowired
 	private PaintingRepository repository;
+	
+	@Autowired
+	private DetailRepository detailRepository;
 	
 	// CREA SLUG
 	public String createSlug(String input) {
@@ -59,26 +62,41 @@ public class PaintingService {
 	// PUSH
 	public ResponseDto savePainting(PaintingDto painting) {
 		
-		Painting newPainting = new Painting();
-		PaintingDto createdPainting = new PaintingDto();
-		ResponseDto response = new ResponseDto();
+		var response = new ResponseDto();
 		
 		try {
 			
 			paintingValidation(painting);
-			PaintingDto.dtoToEntity(painting, newPainting);
 			
-			newPainting.setTitle(painting.getTitle());	
-			newPainting.setSlug(createUniqueSlug(painting.getTitle()));
-			
-			repository.save(newPainting);
-			
-			
-			
-			PaintingDto.entityToDto(newPainting, createdPainting);
+			// Step 1: Salva l'oggetto Painting nel database
+			var newPainting = new Painting();
+					PaintingDto.dtoToEntity(painting, newPainting);
+	        newPainting.setTitle(painting.getTitle());
+	        newPainting.setSlug(createUniqueSlug(painting.getTitle()));	        
 
-			
-			response.setPayload(createdPainting);
+	        repository.save(newPainting);
+
+            var savedPainting = repository.findBySlug(newPainting.getSlug());
+	        
+	        // Step 2: Associa questo ID ai dettagli
+	        var details = painting.getDetails().stream()
+	                .map(detailDto -> {
+	                    var detail = new Detail();
+	                    PaintingDto.detailDtoToEntity(detailDto, detail);	                    
+	                    // Imposta l'ID dell'oggetto Painting nei dettagli
+	                    detail.setPainting(savedPainting);
+	                    return detail;
+	                })
+	                .collect(Collectors.toList());
+	        savedPainting.setDetails(details);
+	        // Step 4: Salva i dettagli nel database
+	        repository.save(savedPainting);
+	        
+
+	        // Aggiorna l'oggetto PaintingDto con le informazioni aggiornate
+	        var createdPainting = PaintingDto.entityToDto(savedPainting);
+
+	        response.setPayload(createdPainting);
 			
 		}catch(Exception e){
 			
@@ -94,14 +112,16 @@ public class PaintingService {
 	// GET
 	public ResponseDto getPaintings(int pageNumber, int pageSize){
 		
-		ResponseDto response = new ResponseDto();
+		var response = new ResponseDto();
 		
 		try {
 			Pageable pageable = PageRequest.of(pageNumber, pageSize);
 			Page<Painting> firstTen = repository.findAll(pageable);
 			Integer totPages = (int) Math.ceil((double) repository.count() / pageSize);
 //			Integer totPages = 1;
-			List<PaintingDto> dtoPaintingList = convertToPaintingDtoList(firstTen, totPages);
+			var dtoPaintingList = firstTen.stream()
+	                .map(painting -> paintingToDto(painting, totPages))
+	                .collect(Collectors.toList());
 			
 			response.setPayload(dtoPaintingList);
 		} catch(Exception e) {
@@ -116,25 +136,48 @@ public class PaintingService {
 	// PUT
 	public ResponseDto updatePainting(PaintingDto painting) {
 		
-		Painting selectedPainting = new Painting();
-		PaintingDto updatedDtoPainting = new PaintingDto();
 		ResponseDto response = new ResponseDto();
 		
 		try {
 			
 			paintingValidation(painting);
+			
 			if(repository.existsBySlug(painting.getSlug())) {
-				selectedPainting = repository.findBySlug(painting.getSlug());
-				if(!selectedPainting.getTitle().equalsIgnoreCase(painting.getTitle())) {
+				Painting selectedPainting = repository.findBySlug(painting.getSlug());
+				
+				selectedPainting = PaintingDto.dtoToEntity(painting, selectedPainting);
+				
+				if(!painting.getTitle().equalsIgnoreCase(selectedPainting.getTitle())) {
 					selectedPainting.setTitle(painting.getTitle());
 					selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));
-				}
-				PaintingDto.dtoToEntity(painting, selectedPainting);
-	//			selectedPainting.setDetails(painting.getDetails());
+				}			
 				
-				repository.save(selectedPainting);
+//				repository.save(selectedPainting);
 
-				PaintingDto.entityToDto(selectedPainting, updatedDtoPainting);
+				final Painting updatedPainting = selectedPainting;
+				
+				// Elimina i dettagli esistenti associati al quadro
+	            detailRepository.deleteByPainting(updatedPainting);
+				
+				if(painting.getDetails() != null) {										
+					var details = painting.getDetails().stream()
+			                .map(detailDto -> {
+			                    var detail = new Detail();
+			                    PaintingDto.detailDtoToEntity(detailDto, detail);	                    
+			                    // Imposta l'ID dell'oggetto Painting nei dettagli
+			                    detail.setPainting(updatedPainting);
+			                    return detail;
+			                })
+			                .collect(Collectors.toList());
+					updatedPainting.setDetails(details);
+				} else {
+					updatedPainting.setDetails(null);
+				}
+				BeanUtils.copyProperties(updatedPainting, selectedPainting);
+
+				repository.save(updatedPainting);
+
+				var updatedDtoPainting = PaintingDto.entityToDto(updatedPainting);
 				response.setPayload(updatedDtoPainting);
 			} else {
 	            ErrorDto error = new ErrorDto();
@@ -154,16 +197,16 @@ public class PaintingService {
 	// DELETE
 	public ResponseDto deletePainting(PaintingDto painting) {
 		
-		Painting selectedPainting = new Painting();
-		PaintingDto delatedDtoPainting = new PaintingDto();
-		ResponseDto response = new ResponseDto();
+		var selectedPainting = new Painting();
+		var response = new ResponseDto();
+		
 		try {
 			if(repository.existsBySlug(painting.getSlug())) {
 				selectedPainting = repository.findBySlug(painting.getSlug());
 	
 				repository.deleteById(selectedPainting.getId());
 				
-				PaintingDto.entityToDto(selectedPainting, delatedDtoPainting);
+				var delatedDtoPainting = PaintingDto.entityToDto(selectedPainting);
 				response.setPayload(delatedDtoPainting);
 			} else {
 	            ErrorDto error = new ErrorDto();
@@ -181,9 +224,9 @@ public class PaintingService {
 	
 	// INTERNAL METHODS
 	private void paintingValidation(PaintingDto painting) throws ValidationException {
+		
 		if(painting != null) {
-			if(!StringUtils.hasText(painting.getTitle())) {
-				
+			if(!StringUtils.hasText(painting.getTitle())) {				
 				throw new ValidationException("05", "Il titolo non può essere vuoto o contenere solo spazi!");
 			}
 			
@@ -194,17 +237,22 @@ public class PaintingService {
 			}					
 		}
 	}
-	
-	private List<PaintingDto> convertToPaintingDtoList(Page<Painting> paintingList, Integer totPages) {
-        return paintingList.stream()
-                .map(painting -> paintingToDto(painting, totPages))
-                .collect(Collectors.toList());
-    }
 
 	private PaintingDto paintingToDto(Painting painting, Integer totPages) {
-        PaintingDto paintingDto = new PaintingDto();
+        
+		var paintingDto = new PaintingDto();
+		
         BeanUtils.copyProperties(painting, paintingDto);
         
+        var detailDtos = painting.getDetails().stream()
+                .map(detail -> {
+                    var detailDto = new DetailDto();
+                    PaintingDto.detailEntityToDto(detail, detailDto);
+                    return detailDto;
+                })
+                .collect(Collectors.toList());
+        
+        paintingDto.setDetails(detailDtos);
         paintingDto.setTotPages(totPages);
         return paintingDto;
     }

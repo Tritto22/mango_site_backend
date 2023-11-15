@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 public class Detail {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	private int id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 	
 	private String name;
 	
