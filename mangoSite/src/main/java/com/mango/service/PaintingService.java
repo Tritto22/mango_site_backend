@@ -163,9 +163,13 @@ public class PaintingService {
 					var details = painting.getDetails().stream()
 			                .map(detailDto -> {
 			                    var detail = new Detail();
-			                    PaintingDto.detailDtoToEntity(detailDto, detail);	                    
+			                    PaintingDto.detailDtoToEntity(detailDto, detail);	
+			                    
 			                    // Imposta l'ID dell'oggetto Painting nei dettagli
-			                    detail.setPainting(updatedPainting);
+			                    if(detail.getName() != null && detail.getLinkImg() != null) {
+			                    	detail.setPainting(updatedPainting);
+			                    }
+			                    
 			                    return detail;
 			                })
 			                .collect(Collectors.toList());

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.StringUtils;
 
 import com.mango.entity.Detail;
 import com.mango.entity.Painting;
@@ -63,8 +64,12 @@ public class PaintingDto implements Serializable{
 	
 	public static void detailDtoToEntity(DetailDto detailDto, Detail detail) {
         // Implementa la logica per la mappatura delle proprietà di DetailDto a Detail
-        detail.setName(detailDto.getName());
-        detail.setLinkImg(detailDto.getLinkImg());
+        if(StringUtils.hasText(detailDto.getName()))
+        	detail.setName(detailDto.getName());
+        
+		if(StringUtils.hasText(detailDto.getLinkImg()))
+			detail.setLinkImg(detailDto.getLinkImg());
+        
     }
 
     public static void detailEntityToDto(Detail detail, DetailDto detailDto) {
