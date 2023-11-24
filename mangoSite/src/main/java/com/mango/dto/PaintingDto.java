@@ -26,6 +26,7 @@ public class PaintingDto implements Serializable{
 	private String img;	
 	private String size;
 	private Integer year;	
+	private String tecnique;
 	private String description;
 	private String slug;
 	private Integer totPages;
@@ -40,6 +41,7 @@ public class PaintingDto implements Serializable{
 		entity.setSize(dto.getSize());
 		entity.setYear(dto.getYear());
 		entity.setDescription(dto.getDescription());
+		entity.setTecnique(dto.getTecnique());
 		entity.setFavorite(dto.getFavorite());	
 		
 		return entity;

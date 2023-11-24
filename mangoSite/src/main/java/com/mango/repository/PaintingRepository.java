@@ -13,4 +13,5 @@ public interface PaintingRepository extends JpaRepository<Painting, Integer> {
 	Painting findBySlug(String slug);
 	boolean existsBySlug(String slug);
 	Page<Painting> findAll(Pageable pageable);
+	List<Painting> findByFavoriteIsTrue(Pageable pageable);
 }

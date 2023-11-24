@@ -39,6 +39,8 @@ public class Painting {
 	@Range(min=1993, max=2199)
 	private Integer year;
 	
+	private String tecnique;
+	
 	private String description;
 	
 	private String slug;

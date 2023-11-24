@@ -118,7 +118,6 @@ public class PaintingService {
 			Pageable pageable = PageRequest.of(pageNumber, pageSize);
 			Page<Painting> firstTen = repository.findAll(pageable);
 			Integer totPages = (int) Math.ceil((double) repository.count() / pageSize);
-//			Integer totPages = 1;
 			var dtoPaintingList = firstTen.stream()
 	                .map(painting -> paintingToDto(painting, totPages))
 	                .collect(Collectors.toList());
@@ -151,8 +150,6 @@ public class PaintingService {
 					selectedPainting.setTitle(painting.getTitle());
 					selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));
 				}			
-				
-//				repository.save(selectedPainting);
 
 				final Painting updatedPainting = selectedPainting;
 				
