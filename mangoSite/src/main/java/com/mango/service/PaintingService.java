@@ -76,27 +76,32 @@ public class PaintingService {
 
 	        repository.save(newPainting);
 
-            var savedPainting = repository.findBySlug(newPainting.getSlug());
-	        
-	        // Step 2: Associa questo ID ai dettagli
-	        var details = painting.getDetails().stream()
-	                .map(detailDto -> {
-	                    var detail = new Detail();
-	                    PaintingDto.detailDtoToEntity(detailDto, detail);	                    
-	                    // Imposta l'ID dell'oggetto Painting nei dettagli
-	                    detail.setPainting(savedPainting);
-	                    return detail;
-	                })
-	                .collect(Collectors.toList());
-	        savedPainting.setDetails(details);
-	        // Step 4: Salva i dettagli nel database
-	        repository.save(savedPainting);
-	        
+	        if(painting.getDetails() != null) {
+	        	var savedPainting = repository.findBySlug(newPainting.getSlug());
+		        
+		        // Step 2: Associa questo ID ai dettagli
+		        var details = painting.getDetails().stream()
+		                .map(detailDto -> {
+		                    var detail = new Detail();
+		                    PaintingDto.detailDtoToEntity(detailDto, detail);	                    
+		                    // Imposta l'ID dell'oggetto Painting nei dettagli
+		                    detail.setPainting(savedPainting);
+		                    return detail;
+		                })
+		                .collect(Collectors.toList());
+		        savedPainting.setDetails(details);
+		        // Step 4: Salva i dettagli nel database
+		        repository.save(savedPainting);
+		        
+		     // Aggiorna l'oggetto PaintingDto con le informazioni aggiornate
+		        var createdPainting = PaintingDto.entityToDto(savedPainting);
 
-	        // Aggiorna l'oggetto PaintingDto con le informazioni aggiornate
-	        var createdPainting = PaintingDto.entityToDto(savedPainting);
+		        response.setPayload(createdPainting);
+	        }
+            
+	        var createdPainting = PaintingDto.entityToDto(newPainting);
 
-	        response.setPayload(createdPainting);
+	        response.setPayload(createdPainting);	        
 			
 		}catch(Exception e){
 			
@@ -151,7 +156,8 @@ public class PaintingService {
 					selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));
 				}			
 
-				final Painting updatedPainting = selectedPainting;
+				final Painting updatedPainting = new Painting();
+				BeanUtils.copyProperties(selectedPainting, updatedPainting);
 				
 				// Elimina i dettagli esistenti associati al quadro
 	            detailRepository.deleteByPainting(updatedPainting);
@@ -171,9 +177,10 @@ public class PaintingService {
 			                })
 			                .collect(Collectors.toList());
 					updatedPainting.setDetails(details);
-				} else {
-					updatedPainting.setDetails(null);
-				}
+				} 
+//				else {
+//					updatedPainting.setDetails(null);
+//				}
 				BeanUtils.copyProperties(updatedPainting, selectedPainting);
 
 				repository.save(updatedPainting);

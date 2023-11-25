@@ -27,7 +27,7 @@ public class PaintingPublicService {
 		var response = new ResponseDto();
 		
 		try {
-			Pageable pageable = PageRequest.of(0, 5);
+			Pageable pageable = PageRequest.of(0, 4);
 			var favoritePaintings = repository.findByFavoriteIsTrue(pageable);
 
 			var dtoPaintingList = favoritePaintings.stream()

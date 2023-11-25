@@ -52,14 +52,16 @@ public class PaintingDto implements Serializable{
 		var createdPainting = new PaintingDto();
 		
 		BeanUtils.copyProperties(entity, createdPainting);
-		List<DetailDto> detailDtos = entity.getDetails().stream()
-                .map(detail -> {
-                    var detailDto = new DetailDto();
-                    detailEntityToDto(detail, detailDto);
-                    return detailDto;
-                })
-                .collect(Collectors.toList());
-		createdPainting.setDetails(detailDtos);
+		if(entity.getDetails()!=null) {
+			List<DetailDto> detailDtos = entity.getDetails().stream()
+	                .map(detail -> {
+	                    var detailDto = new DetailDto();
+	                    detailEntityToDto(detail, detailDto);
+	                    return detailDto;
+	                })
+	                .collect(Collectors.toList());
+			createdPainting.setDetails(detailDtos);
+		}
 		
 		return createdPainting;
 	}
