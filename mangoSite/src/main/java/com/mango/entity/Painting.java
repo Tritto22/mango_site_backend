@@ -13,7 +13,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,4 +54,8 @@ public class Painting {
 	@OneToMany(mappedBy="painting", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Detail> details;
 	
+	@OneToOne(mappedBy = "painting", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+//    @JoinColumn(name = "image_painting_data_id", nullable = true)
+    private ImagePaintingData imagePaintingData;
 }
