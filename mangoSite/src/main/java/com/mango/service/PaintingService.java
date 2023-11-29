@@ -18,6 +18,7 @@ import com.mango.entity.Detail;
 import com.mango.entity.Painting;
 import com.mango.exception.ValidationException;
 import com.mango.repository.DetailRepository;
+import com.mango.repository.ImagePaintingRepository;
 import com.mango.repository.PaintingRepository;
 
 
@@ -29,6 +30,9 @@ public class PaintingService {
 	
 	@Autowired
 	private DetailRepository detailRepository;
+	
+	@Autowired
+	private ImagePaintingRepository imageRepository;
 	
 	// CREA SLUG
 	public String createSlug(String input) {
@@ -137,10 +141,41 @@ public class PaintingService {
 		return response;
 	}
 	
-	// PUT
+	// GET SINGLE
+	public ResponseDto getSinglePainting(String slug){
+		
+		var response = new ResponseDto();
+		var currentPainting = new Painting();
+		
+		try {
+			boolean paintingExsist = repository.existsBySlug(slug);
+			if(paintingExsist) {
+				
+				currentPainting = repository.findBySlug(slug);
+				var dtoPainting = PaintingDto.entityToDto(currentPainting);
+				System.out.println(dtoPainting);
+				response.setPayload(dtoPainting);
+				
+			} else {
+				
+	            ErrorDto error = new ErrorDto();
+	            error.setMsg("Il quadro con lo slug specificato non esiste.");
+	            response.setError(error);
+	            
+	        }
+		} catch(Exception e) {
+			
+			ErrorDto error = new ErrorDto();
+			error.setMsg("Errore nel caricamento dei quadri!");
+		}
+				
+		return response;
+	}
+	
+	//PUT
 	public ResponseDto updatePainting(PaintingDto painting) {
 		
-		ResponseDto response = new ResponseDto();
+		var response = new ResponseDto();
 		
 		try {
 			
@@ -149,50 +184,55 @@ public class PaintingService {
 			if(repository.existsBySlug(painting.getSlug())) {
 				Painting selectedPainting = repository.findBySlug(painting.getSlug());
 				
-				selectedPainting = PaintingDto.dtoToEntity(painting, selectedPainting);
-				
-				if(!painting.getTitle().equalsIgnoreCase(selectedPainting.getTitle())) {
-					selectedPainting.setTitle(painting.getTitle());
-					selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));
-				}			
 
-				final Painting updatedPainting = new Painting();
-				BeanUtils.copyProperties(selectedPainting, updatedPainting);
-				
-				// Elimina i dettagli esistenti associati al quadro
-	            detailRepository.deleteByPainting(updatedPainting);
-				
-				if(painting.getDetails() != null) {										
-					var details = painting.getDetails().stream()
+				PaintingDto.dtoToEntity(painting, selectedPainting);
+				selectedPainting.setTitle(painting.getTitle());
+				selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));	        
+				selectedPainting.setDetails(null);
+//				repository.deleteById(selectedPainting.getId());
+				// Dissocia l'oggetto ImagePaintingData dalla sessione
+			     // Elimina l'immagine esistente associata al quadro
+					imageRepository.deleteByPainting(selectedPainting);
+					detailRepository.deleteByPainting(selectedPainting);
+		        repository.save(selectedPainting);
+
+
+		        if(painting.getDetails() != null && painting.getDetails().size()>0) {
+		        	var savedPainting = repository.findBySlug(selectedPainting.getSlug());
+		        	
+			        // Step 2: Associa questo ID ai dettagli
+			        var details = painting.getDetails().stream()
 			                .map(detailDto -> {
 			                    var detail = new Detail();
-			                    PaintingDto.detailDtoToEntity(detailDto, detail);	
-			                    
+			                    PaintingDto.detailDtoToEntity(detailDto, detail);	                    
 			                    // Imposta l'ID dell'oggetto Painting nei dettagli
-			                    if(detail.getName() != null && detail.getLinkImg() != null) {
-			                    	detail.setPainting(updatedPainting);
-			                    }
-			                    
+			                    detail.setPainting(savedPainting);
 			                    return detail;
 			                })
 			                .collect(Collectors.toList());
-					updatedPainting.setDetails(details);
-				} 
-//				else {
-//					updatedPainting.setDetails(null);
-//				}
-				BeanUtils.copyProperties(updatedPainting, selectedPainting);
+			        savedPainting.setDetails(details);
+			        // Step 4: Salva i dettagli nel database
+//			        repository.deleteById(savedPainting.getId());
+			        repository.save(savedPainting);
+			        
+			     // Aggiorna l'oggetto PaintingDto con le informazioni aggiornate
+			        var createdPainting = PaintingDto.entityToDto(savedPainting);
 
-				repository.save(updatedPainting);
+			        response.setPayload(createdPainting);
+		        }else {
+		        	var createdPainting = PaintingDto.entityToDto(selectedPainting);
 
-				var updatedDtoPainting = PaintingDto.entityToDto(updatedPainting);
-				response.setPayload(updatedDtoPainting);
+			        response.setPayload(createdPainting);
+		        }    
+		        
 			} else {
 	            ErrorDto error = new ErrorDto();
 	            error.setMsg("Il quadro con lo slug specificato non esiste.");
 	            response.setError(error);
 	        }
-		} catch(Exception e) {
+				
+		}catch(Exception e){
+			
 			ErrorDto error = new ErrorDto();
 			error.setMsg(e.getMessage());
 			response.setError(error);
@@ -201,6 +241,74 @@ public class PaintingService {
 
 		return response;
 	}
+	
+//	// PUT
+//	public ResponseDto updatePainting(PaintingDto painting) {
+//		
+//		ResponseDto response = new ResponseDto();
+//		
+//		try {
+//			
+//			paintingValidation(painting);
+//			
+//			if(repository.existsBySlug(painting.getSlug())) {
+//				Painting selectedPainting = repository.findBySlug(painting.getSlug());
+//				
+////				// Elimina i dettagli esistenti associati al quadro
+////	            detailRepository.deleteByPainting(selectedPainting);
+////	         // Elimina l'immagine esistente associata al quadro
+////	            imageRepository.deleteByPainting(selectedPainting);
+//	            
+//				selectedPainting = PaintingDto.dtoToEntity(painting, selectedPainting);
+//				
+//				if(!painting.getTitle().equalsIgnoreCase(selectedPainting.getTitle())) {
+//					selectedPainting.setTitle(painting.getTitle());
+//					selectedPainting.setSlug(createUniqueSlug(painting.getTitle()));
+//				}			
+//
+//				final Painting updatedPainting = new Painting();
+//				BeanUtils.copyProperties(selectedPainting, updatedPainting);
+//				
+//				// Elimina i dettagli esistenti associati al quadro
+//	            detailRepository.deleteByPainting(updatedPainting);
+//	            imageRepository.deleteByPainting(selectedPainting);
+//				
+//				if(painting.getDetails() != null && painting.getDetails().size() > 0) {										
+//					var details = painting.getDetails().stream()
+//			                .map(detailDto -> {
+//			                    var detail = new Detail();
+//			                    PaintingDto.detailDtoToEntity(detailDto, detail);	
+//			                    
+//			                    // Imposta l'ID dell'oggetto Painting nei dettagli
+//			                    if(detail.getName() != null && detail.getLinkImg() != null) {
+//			                    	detail.setPainting(updatedPainting);
+//			                    }
+//			                    
+//			                    return detail;
+//			                })
+//			                .collect(Collectors.toList());
+//					updatedPainting.setDetails(details);
+//				} 
+////				BeanUtils.copyProperties(updatedPainting, selectedPainting);
+//
+//				repository.save(updatedPainting);
+//
+//				var updatedDtoPainting = PaintingDto.entityToDto(updatedPainting);
+//				response.setPayload(updatedDtoPainting);
+//			} else {
+//	            ErrorDto error = new ErrorDto();
+//	            error.setMsg("Il quadro con lo slug specificato non esiste.");
+//	            response.setError(error);
+//	        }
+//		} catch(Exception e) {
+//			ErrorDto error = new ErrorDto();
+//			error.setMsg(e.getMessage());
+//			response.setError(error);
+//		}
+//		
+//
+//		return response;
+//	}
 	
 	// DELETE
 	public ResponseDto deletePainting(PaintingDto painting) {
@@ -262,6 +370,16 @@ public class PaintingService {
         
         paintingDto.setDetails(detailDtos);
         paintingDto.setTotPages(totPages);
+        
+        if(painting.getImagePaintingData() != null) {
+        	String imageBase64 = "data:"
+    				+ painting.getImagePaintingData().getType() 
+    				+ ";base64,"
+    				+ PaintingDto.bytesToBase64(painting.getImagePaintingData().getImageData());
+            paintingDto.setImageDataBase64(imageBase64);
+        }
+        
+
         return paintingDto;
     }
 }

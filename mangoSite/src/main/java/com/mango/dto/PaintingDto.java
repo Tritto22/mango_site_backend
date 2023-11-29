@@ -72,7 +72,7 @@ public class PaintingDto implements Serializable{
 		var createdPainting = new PaintingDto();
 		
 		BeanUtils.copyProperties(entity, createdPainting);
-		if(entity.getDetails()!=null) {
+		if(entity.getDetails().size()>0 && entity.getDetails() != null) {
 			List<DetailDto> detailDtos = entity.getDetails().stream()
 	                .map(detail -> {
 	                    var detailDto = new DetailDto();
@@ -82,6 +82,12 @@ public class PaintingDto implements Serializable{
 	                .collect(Collectors.toList());
 			createdPainting.setDetails(detailDtos);
 		}
+		
+		String imageBase64 = "data:"
+							+ entity.getImagePaintingData().getType() 
+							+ ";base64,"
+							+ PaintingDto.bytesToBase64(entity.getImagePaintingData().getImageData());
+		createdPainting.setImageDataBase64(imageBase64);
 		
 		return createdPainting;
 	}

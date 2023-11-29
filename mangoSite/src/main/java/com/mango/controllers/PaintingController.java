@@ -36,6 +36,14 @@ public class PaintingController {
 		return ResponseEntity.ok(response);
 	}
 	
+	@GetMapping("/single-view")
+	public ResponseEntity<?> adminSinglePainting(@RequestParam String slug) {
+
+		ResponseDto response = service.getSinglePainting(slug);
+	    
+		return ResponseEntity.ok(response);
+	}
+	
 	@PostMapping("/addPainting")
 	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<?> addPainting(@RequestBody PaintingDto painting) {
