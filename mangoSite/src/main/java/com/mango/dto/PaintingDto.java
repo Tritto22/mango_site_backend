@@ -99,15 +99,21 @@ public class PaintingDto implements Serializable{
         if(StringUtils.hasText(detailDto.getName()))
         	detail.setName(detailDto.getName());
         
-		if(StringUtils.hasText(detailDto.getLinkImg()))
-			detail.setLinkImg(detailDto.getLinkImg());
-        
+		if(StringUtils.hasText(detailDto.getImageBase64())) {
+			detail.setType(PaintingDto.getContentTypeFromBase64(detailDto.getImageBase64()));
+			detail.setImageData(PaintingDto.base64ToBytes(detailDto.getImageBase64()));
+		}
     }
 
     public static void detailEntityToDto(Detail detail, DetailDto detailDto) {
         // Implementa la logica per la mappatura delle proprietà di Detail a DetailDto
         detailDto.setName(detail.getName());
-        detailDto.setLinkImg(detail.getLinkImg());
+        
+        String imageBase64 = "data:"
+				+ detail.getType() 
+				+ ";base64,"
+				+ PaintingDto.bytesToBase64(detail.getImageData());
+        detailDto.setImageBase64(imageBase64);
     }
     
     // IMAGE CONVERSION METHODS
