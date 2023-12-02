@@ -34,8 +34,6 @@ public class Painting {
 
 	@NotBlank(message = "Il campo non può essere vuoto o contenere solo spazi.")
 	private String title;
-		
-	private String img;
 	
 	private String size;
 	

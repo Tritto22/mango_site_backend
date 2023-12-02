@@ -197,7 +197,7 @@ public class PaintingService {
 		        repository.save(selectedPainting);
 
 
-		        if(painting.getDetails() != null && painting.getDetails().size()>0) {
+		        if(painting.getDetails() != null) {
 		        	var savedPainting = repository.findBySlug(selectedPainting.getSlug());
 		        	
 			        // Step 2: Associa questo ID ai dettagli
@@ -338,6 +338,24 @@ public class PaintingService {
 		return response;
 	}
 	
+	// DELETE ALL
+public ResponseDto deleteAllPainting() {
+	var response = new ResponseDto();
+		try {
+				var painting = new PaintingDto();
+				repository.deleteAll();
+				
+				response.setPayload(painting+"tutti i painting sono stati rimossi con successo");
+
+		} catch(Exception e) {
+			ErrorDto error = new ErrorDto();
+			error.setMsg(e.getMessage());
+			response.setError(error);
+		}
+
+		return response;
+	}
+
 	// INTERNAL METHODS
 	private void paintingValidation(PaintingDto painting) throws ValidationException {
 		
@@ -360,15 +378,20 @@ public class PaintingService {
 		
         BeanUtils.copyProperties(painting, paintingDto);
         
-        var detailDtos = painting.getDetails().stream()
-                .map(detail -> {
-                    var detailDto = new DetailDto();
-                    PaintingDto.detailEntityToDto(detail, detailDto);
-                    return detailDto;
-                })
-                .collect(Collectors.toList());
+        if(painting.getDetails() != null) {
+        	var detailDtos = painting.getDetails().stream()
+                    .map(detail -> {
+                        var detailDto = new DetailDto();
+                        PaintingDto.detailEntityToDto(detail, detailDto);
+                        return detailDto;
+                    })
+                    .collect(Collectors.toList());
+            
+            paintingDto.setDetails(detailDtos);
+        }else {
+        	paintingDto.setDetails(null);
+        }
         
-        paintingDto.setDetails(detailDtos);
         paintingDto.setTotPages(totPages);
         
         if(painting.getImagePaintingData() != null) {
@@ -379,7 +402,6 @@ public class PaintingService {
             paintingDto.setImageDataBase64(imageBase64);
         }
         
-
         return paintingDto;
     }
 }

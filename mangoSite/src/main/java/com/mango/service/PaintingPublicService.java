@@ -51,16 +51,30 @@ public class PaintingPublicService {
 		
         BeanUtils.copyProperties(painting, paintingDto);
         
-        var detailDtos = painting.getDetails().stream()
-                .map(detail -> {
-                    var detailDto = new DetailDto();
-                    PaintingDto.detailEntityToDto(detail, detailDto);
-                    return detailDto;
-                })
-                .collect(Collectors.toList());
+        if(painting.getDetails() != null) {
+        	var detailDtos = painting.getDetails().stream()
+                    .map(detail -> {
+                        var detailDto = new DetailDto();
+                        PaintingDto.detailEntityToDto(detail, detailDto);
+                        return detailDto;
+                    })
+                    .collect(Collectors.toList());
+            
+            paintingDto.setDetails(detailDtos);
+        }else {
+        	paintingDto.setDetails(null);
+        }
         
-        paintingDto.setDetails(detailDtos);
         paintingDto.setTotPages(totPages);
+        
+        if(painting.getImagePaintingData() != null) {
+        	String imageBase64 = "data:"
+    				+ painting.getImagePaintingData().getType() 
+    				+ ";base64,"
+    				+ PaintingDto.bytesToBase64(painting.getImagePaintingData().getImageData());
+            paintingDto.setImageDataBase64(imageBase64);
+        }
+        
         return paintingDto;
     }
 }

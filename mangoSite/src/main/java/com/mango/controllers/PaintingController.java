@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mango.dto.PaintingDto;
 import com.mango.dto.ResponseDto;
 import com.mango.service.ImagePaintingDataService;
@@ -46,8 +48,12 @@ public class PaintingController {
 	
 	@PostMapping("/addPainting")
 	@PreAuthorize("hasRole('USER')")
-	public ResponseEntity<?> addPainting(@RequestBody PaintingDto painting) {
+	public ResponseEntity<?> addPainting(@RequestBody PaintingDto painting) throws JsonProcessingException{
 		
+		ObjectMapper objectMapper = new ObjectMapper();
+        String paintingJson = objectMapper.writeValueAsString(painting);
+
+        System.out.println(paintingJson);
 		ResponseDto response = service.savePainting(painting);
 		
 		return ResponseEntity.ok(response);
@@ -67,6 +73,15 @@ public class PaintingController {
 	public ResponseEntity<?> deletePainting(@RequestBody PaintingDto painting) {
 		
 		ResponseDto response = service.deletePainting(painting);
+		
+		return ResponseEntity.ok(response);
+	}
+	
+	@DeleteMapping("/delete-all")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> deleteAllPainting() {
+		
+		ResponseDto response = service.deleteAllPainting();
 		
 		return ResponseEntity.ok(response);
 	}

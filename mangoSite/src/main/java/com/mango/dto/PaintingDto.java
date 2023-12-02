@@ -27,8 +27,7 @@ public class PaintingDto implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String title;	
-	private String img;	
+	private String title;		
 	private String size;
 	private Integer year;	
 	private String tecnique;
@@ -45,7 +44,6 @@ public class PaintingDto implements Serializable{
 		
 //		var newPainting = new Painting();
 		
-		entity.setImg(dto.getImg());
 		entity.setSize(dto.getSize());
 		entity.setYear(dto.getYear());
 		entity.setDescription(dto.getDescription());
@@ -72,7 +70,7 @@ public class PaintingDto implements Serializable{
 		var createdPainting = new PaintingDto();
 		
 		BeanUtils.copyProperties(entity, createdPainting);
-		if(entity.getDetails().size()>0 && entity.getDetails() != null) {
+		if(entity.getDetails() != null) {
 			List<DetailDto> detailDtos = entity.getDetails().stream()
 	                .map(detail -> {
 	                    var detailDto = new DetailDto();
@@ -106,14 +104,18 @@ public class PaintingDto implements Serializable{
     }
 
     public static void detailEntityToDto(Detail detail, DetailDto detailDto) {
-        // Implementa la logica per la mappatura delle proprietà di Detail a DetailDto
-        detailDto.setName(detail.getName());
+
+    	if(detail.getName() != null) {
+    		detailDto.setName(detail.getName());
+    	}
         
-        String imageBase64 = "data:"
-				+ detail.getType() 
-				+ ";base64,"
-				+ PaintingDto.bytesToBase64(detail.getImageData());
-        detailDto.setImageBase64(imageBase64);
+        if (detail.getImageData() != null) {
+        	String imageBase64 = "data:"
+    				+ detail.getType() 
+    				+ ";base64,"
+    				+ PaintingDto.bytesToBase64(detail.getImageData());
+            detailDto.setImageBase64(imageBase64);
+        }
     }
     
     // IMAGE CONVERSION METHODS
