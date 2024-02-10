@@ -61,26 +61,26 @@ public class WebSecurityConfig {
 	}
 	
 	// fix cross-origin
-	@Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:8081"); // Sostituisci con l'origine del tuo frontend
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
-        config.addExposedHeader("Access-Control-Allow-Origin"); // Aggiungi l'header Access-Control-Allow-Origin
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
+	// @Bean
+    // public CorsFilter corsFilter() {
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     CorsConfiguration config = new CorsConfiguration();
+    //     config.addAllowedOrigin("https://tritto22.github.io/mango_site_frontend"); // Sostituisci con l'origine del tuo frontend
+    //     config.addAllowedHeader("*");
+    //     config.addAllowedMethod("GET");
+    //     config.addAllowedMethod("POST");
+    //     config.addAllowedMethod("PUT");
+    //     config.addAllowedMethod("DELETE");
+    //     config.addExposedHeader("Access-Control-Allow-Origin"); // Aggiungi l'header Access-Control-Allow-Origin
+	// 	config.setAllowCredentials(true);
+    //     source.registerCorsConfiguration("/**", config);
+    //     return new CorsFilter(source);
+    // }
 	  
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 	    http
-	    	.addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+	    	// .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
 	    	.csrf(csrf -> csrf.disable())
 //	        .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

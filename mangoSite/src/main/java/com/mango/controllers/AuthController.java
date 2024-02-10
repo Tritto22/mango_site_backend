@@ -40,7 +40,7 @@ import com.mango.security.services.UserDetailsImpl;
 
 import io.jsonwebtoken.Jwts;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "https://tritto22.github.io/mango_site_frontend", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -59,6 +59,11 @@ public class AuthController {
 
 	@Autowired
 	JwtUtils jwtUtils;
+	
+	@GetMapping("/hello")
+	public String helloWorld() {
+		return "Hello world";
+	}
 	
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {

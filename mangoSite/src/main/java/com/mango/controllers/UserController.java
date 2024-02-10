@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import com.mango.dto.UserDto;
 import com.mango.service.UserService;
 
 //@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "https://tritto22.github.io/mango_site_frontend", maxAge = 3600)
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
