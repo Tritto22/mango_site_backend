@@ -26,11 +26,16 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
-/ca_bundle.crt
-/certificate.crt
-/keystore.p12
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+ca_bundle.crt
+certificate.crt
+keystore.p12
+private.key
+*.p12
+*.crt
+*.key
 
 ### VS Code ###
 .vscode/
