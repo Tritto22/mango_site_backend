@@ -26,6 +26,9 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
+/ca_bundle.crt
+/certificate.crt
+/keystore.p12
 !**/src/main/**/build/
 !**/src/test/**/build/
 
